@@ -67,7 +67,7 @@ const companies = [
 
 export function Testimonials() {
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-purple-50">
+    <section id="about" className="py-20 bg-gradient-to-br from-muted/30 to-purple-50/30 dark:from-gray-950 dark:to-purple-900/10 scroll-mt-16">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">

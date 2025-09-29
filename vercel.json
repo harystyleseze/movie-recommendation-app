@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "name": "movie-recommendation-frontend",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "$BACKEND_URL/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "$BACKEND_URL/api",
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "$BACKEND_URL/api"
+    }
+  },
+  "functions": {
+    "frontend/dist/**": {
+      "includeFiles": "frontend/dist/**"
+    }
+  }
+}

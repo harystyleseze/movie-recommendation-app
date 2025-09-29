@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-900 dark:via-background dark:to-purple-900/20 flex items-center transition-colors duration-300">
+    <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-background to-purple-50 dark:from-gray-900 dark:via-background dark:to-purple-900/20 flex items-center transition-colors duration-300 pt-16">
       <div className="container mx-auto px-4 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Content */}

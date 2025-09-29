@@ -88,7 +88,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section className="py-20 bg-white">
+    <section id="pricing" className="py-20 bg-background scroll-mt-16">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">

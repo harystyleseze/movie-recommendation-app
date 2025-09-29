@@ -1,3 +1,4 @@
+import { Navbar } from './Navbar'
 import { Hero } from './Hero'
 import { ValuePropositions } from './ValuePropositions'
 import { ProductOverview } from './ProductOverview'
@@ -6,12 +7,11 @@ import { Testimonials } from './Testimonials'
 import { Pricing } from './Pricing'
 import { FinalCTA } from './FinalCTA'
 import { Footer } from './Footer'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300 custom-scrollbar">
-      <ThemeToggle />
+      <Navbar />
       <Hero />
       <ValuePropositions />
       <ProductOverview />
