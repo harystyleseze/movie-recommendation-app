@@ -1,0 +1,46 @@
+# Development Dockerfile for Node.js Backend
+FROM node:20.18.1-alpine
+
+# Install security updates and essential tools
+RUN apk update && apk add --no-cache \
+    dumb-init \
+    curl \
+    git \
+    && rm -rf /var/cache/apk/*
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+ENV NPM_CONFIG_FUND=false
+
+# Copy package files first for better caching
+COPY package*.json ./
+
+# Install dependencies (including devDependencies)
+RUN npm ci && npm cache clean --force
+
+# Change ownership of node_modules
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Copy source code (this will be mounted as volume in development)
+COPY --chown=nodejs:nodejs . .
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start with nodemon for hot reload
+CMD ["dumb-init", "npm", "run", "dev"]
