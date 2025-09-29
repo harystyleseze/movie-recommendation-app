@@ -11,9 +11,10 @@ const dotenv = require("dotenv"); // Loads environment variables from .env file
 // Load environment variables
 dotenv.config();
 
-// // Route modules
-const userRoutes = require("./routes/userRoutes");
+// Route modules
 // const movieRoutes = require("./routes/movieRoutes");
+const authRoutes = require("./routes/auth.routes");
+const { handleError } = require("./utils/error");
 
 // Initialize Express application
 const app = express();
@@ -21,7 +22,15 @@ const app = express();
 /**
  * @constant {string[]} allowedOrigins - Whitelisted domains for CORS.
  */
-const allowedOrigins = ["http://localhost:3000", "https://movieapp.com"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://movieapp.com",
+  "http://127.0.0.1:5173",
+  "http://localhost:5173",
+  "http://localhost:5000",
+  "http://localhost:5001",
+  "https://www.thunderclient.com",
+];
 
 /**
  * @typedef {import('cors').CorsOptions} CorsOptions
@@ -61,10 +70,16 @@ app.use(express.json());
 // =======================
 
 /**
+ * Authentication routes
+ * Mounted at /api/v1/auth
+ */
+app.use("/api/v1/auth", authRoutes);
+
+/**
  * User-related routes.
  * Mounted at /api/v1/users
  */
-app.use("/api/v1/users", userRoutes);
+// app.use("/api/v1/users", userRoutes);
 
 /**
  * Movie-related routes.
@@ -85,9 +100,6 @@ app.use("/api/v1/users", userRoutes);
  * @param {import('express').Response} res - The response object
  * @param {import('express').NextFunction} next - The next middleware function
  */
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Server Error" });
-});
+app.use(handleError);
 
 module.exports = app;

@@ -3,9 +3,9 @@
  * Loads environment variables, connects to MongoDB, and starts the Express server.
  */
 
-const mongoose = require("mongoose"); // Mongoose ODM for MongoDB interaction
 const dotenv = require("dotenv"); // Loads environment variables from .env file
 const app = require("./app"); // Express application instance
+const connectDB = require("./config/database"); // Database connection function
 
 // Load environment variables from .env file into process.env
 dotenv.config({
@@ -25,27 +25,18 @@ const PORT = process.env.PORT || 5000;
  * @function startServer
  * @returns {Promise<void>} Resolves when the server has started successfully.
  */
-async function startServer() {
+const startServer = async () => {
   try {
-    // Connect to MongoDB
-    if (!process.env.MONGO_URI) {
-      throw new Error("❌ MONGO_URI is not defined in environment variables.");
-    }
-
-    await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
-    });
-
-    console.log("✅ MongoDB connected");
+    await connectDB();
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
-  } catch (err) {
-    console.error("❌ MongoDB connection failed:", err.message);
-    process.exit(1); // Exit the app if DB connection fails
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
   }
-}
+};
 
 // Start the server
 startServer();
