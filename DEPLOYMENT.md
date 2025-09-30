@@ -22,11 +22,13 @@ This comprehensive guide covers deploying the Movie Recommendation App with ente
 ## Prerequisites
 
 ### Development
+
 - Docker 24.0+ and Docker Compose v2.20+
 - Node.js 20.18+ with npm 10+
 - Git 2.40+
 
 ### Production
+
 - **Infrastructure**: Kubernetes cluster or Docker Swarm
 - **Database**: MongoDB Atlas (recommended) or self-hosted MongoDB 7.0+
 - **SSL Certificates**: Let's Encrypt or commercial CA
@@ -34,6 +36,51 @@ This comprehensive guide covers deploying the Movie Recommendation App with ente
 - **Monitoring**: Prometheus + Grafana stack
 - **CI/CD**: GitHub Actions with production secrets
 - **Container Registry**: Docker Hub, ECR, or private registry
+
+The current CI/CD pipeline does not automatically push to Docker registry yet. Let me clarify what's currently set up
+versus what would happen in production:
+
+Current Status:
+
+✅ What's Working:
+
+- Local Docker builds (frontend & backend containers build successfully)
+- CI/CD pipeline structure is complete
+- GitHub Actions workflow file exists
+
+❌ What's Missing for Auto-Push:
+
+- The pipeline needs to be triggered by an actual Git push to main or develop branch
+- Docker registry authentication secrets need to be configured in GitHub
+- The workflow needs to run in GitHub Actions (not locally)
+
+How Docker Registry Push Works:
+
+The CI/CD pipeline (/.github/workflows/ci-cd.yml) is configured to:
+
+1. Build Docker images during CI
+2. Push to GitHub Container Registry (GHCR) automatically
+3. Deploy to production (Render/Vercel)
+
+But this only happens when:
+
+- Code is pushed to main or develop branch
+- GitHub Actions runs the workflow
+- Proper secrets are configured
+
+To Enable Auto-Push:
+
+You would need to:
+
+1. Push code to GitHub (triggers the workflow)
+2. Configure GitHub secrets:
+
+   - GITHUB_TOKEN (usually automatic)
+   - Any deployment secrets for Render/Vercel
+
+3. The workflow runs automatically and pushes to ghcr.io/your-username/movie-recommendation-app
+
+Currently, we've only tested the pipeline locally - the actual Docker registry push happens when the GitHub Actions workflow runs in the cloud.
 
 ## Security Requirements
 
@@ -55,12 +102,14 @@ openssl rand -hex 32
 ### Environment Variables Security
 
 **❌ NEVER DO:**
+
 - Commit secrets to version control
 - Use predictable passwords
 - Share secrets via email/chat
 - Use development secrets in production
 
 **✅ ALWAYS DO:**
+
 - Use secrets management systems
 - Rotate secrets regularly (every 90 days)
 - Use different secrets per environment
@@ -169,6 +218,7 @@ docker-compose -f docker-compose.dev.yml down -v
 ```
 
 **Development Services:**
+
 - **Frontend**: React + Vite with HMR on http://localhost:5173
 - **Backend**: Node.js + nodemon with hot reload on http://localhost:3000
 - **MongoDB**: Local instance on localhost:27017 (no auth)
@@ -180,7 +230,7 @@ docker-compose -f docker-compose.dev.yml down -v
 
 ```yaml
 # docker-compose.prod.yml (Enhanced)
-version: '3.8'
+version: "3.8"
 
 services:
   # MongoDB Replica Set (Primary)
@@ -201,10 +251,10 @@ services:
       resources:
         limits:
           memory: 2G
-          cpus: '1.0'
+          cpus: "1.0"
         reservations:
           memory: 1G
-          cpus: '0.5'
+          cpus: "0.5"
 
   # MongoDB Replica Set (Secondary)
   mongodb-secondary:
@@ -238,7 +288,7 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: '0.5'
+          cpus: "0.5"
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -305,9 +355,9 @@ volumes:
 
 ```javascript
 // MongoDB production initialization script
-print('Setting up production database...');
+print("Setting up production database...");
 
-db = db.getSiblingDB('admin');
+db = db.getSiblingDB("admin");
 
 // Create application database
 db = db.getSiblingDB(process.env.DB_NAME);
@@ -318,36 +368,39 @@ db.createUser({
   pwd: process.env.MONGODB_APP_PASSWORD,
   roles: [
     {
-      role: 'readWrite',
-      db: process.env.DB_NAME
-    }
-  ]
+      role: "readWrite",
+      db: process.env.DB_NAME,
+    },
+  ],
 });
 
 // Create collections with validation
-db.createCollection('users', {
+db.createCollection("users", {
   validator: {
     $jsonSchema: {
-      bsonType: 'object',
-      required: ['name', 'email', 'password'],
+      bsonType: "object",
+      required: ["name", "email", "password"],
       properties: {
-        name: { bsonType: 'string', minLength: 2, maxLength: 50 },
-        email: { bsonType: 'string', pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$' },
-        password: { bsonType: 'string', minLength: 60 },
-        role: { enum: ['user', 'admin'] },
-        createdAt: { bsonType: 'date' },
-        updatedAt: { bsonType: 'date' }
-      }
-    }
-  }
+        name: { bsonType: "string", minLength: 2, maxLength: 50 },
+        email: {
+          bsonType: "string",
+          pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        },
+        password: { bsonType: "string", minLength: 60 },
+        role: { enum: ["user", "admin"] },
+        createdAt: { bsonType: "date" },
+        updatedAt: { bsonType: "date" },
+      },
+    },
+  },
 });
 
 // Create indexes for performance and uniqueness
 db.users.createIndex({ email: 1 }, { unique: true });
 db.users.createIndex({ createdAt: 1 });
-db.users.createIndex({ 'preferences.genres': 1 });
+db.users.createIndex({ "preferences.genres": 1 });
 
-db.movies.createIndex({ title: 'text', description: 'text' });
+db.movies.createIndex({ title: "text", description: "text" });
 db.movies.createIndex({ genres: 1 });
 db.movies.createIndex({ releaseYear: 1 });
 db.movies.createIndex({ rating: 1 });
@@ -355,9 +408,12 @@ db.movies.createIndex({ imdbId: 1 }, { unique: true, sparse: true });
 
 db.recommendations.createIndex({ userId: 1, createdAt: -1 });
 db.recommendations.createIndex({ movieId: 1 });
-db.recommendations.createIndex({ createdAt: 1 }, { expireAfterSeconds: 2592000 }); // 30 days
+db.recommendations.createIndex(
+  { createdAt: 1 },
+  { expireAfterSeconds: 2592000 }
+); // 30 days
 
-print('Production database setup completed successfully');
+print("Production database setup completed successfully");
 ```
 
 2. **MongoDB Replica Set Configuration**:
@@ -724,29 +780,29 @@ rule_files:
   - "alert_rules.yml"
 
 scrape_configs:
-  - job_name: 'backend'
+  - job_name: "backend"
     static_configs:
-      - targets: ['backend:3000']
-    metrics_path: '/api/metrics'
+      - targets: ["backend:3000"]
+    metrics_path: "/api/metrics"
     scrape_interval: 30s
 
-  - job_name: 'nginx'
+  - job_name: "nginx"
     static_configs:
-      - targets: ['nginx:9113']
+      - targets: ["nginx:9113"]
 
-  - job_name: 'mongodb'
+  - job_name: "mongodb"
     static_configs:
-      - targets: ['mongodb-exporter:9216']
+      - targets: ["mongodb-exporter:9216"]
 
-  - job_name: 'node-exporter'
+  - job_name: "node-exporter"
     static_configs:
-      - targets: ['node-exporter:9100']
+      - targets: ["node-exporter:9100"]
 
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          - alertmanager:9093
+            - alertmanager:9093
 ```
 
 ### Alert Rules
@@ -790,26 +846,26 @@ groups:
 Add to your Express app:
 
 ```javascript
-const prometheus = require('prom-client');
+const prometheus = require("prom-client");
 
 // Create metrics
 const httpRequestDuration = new prometheus.Histogram({
-  name: 'http_request_duration_seconds',
-  help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'status_code', 'endpoint']
+  name: "http_request_duration_seconds",
+  help: "Duration of HTTP requests in seconds",
+  labelNames: ["method", "status_code", "endpoint"],
 });
 
 const httpRequestsTotal = new prometheus.Counter({
-  name: 'http_requests_total',
-  help: 'Total number of HTTP requests',
-  labelNames: ['method', 'status_code', 'endpoint']
+  name: "http_requests_total",
+  help: "Total number of HTTP requests",
+  labelNames: ["method", "status_code", "endpoint"],
 });
 
 // Middleware to collect metrics
 app.use((req, res, next) => {
   const start = Date.now();
 
-  res.on('finish', () => {
+  res.on("finish", () => {
     const duration = (Date.now() - start) / 1000;
     const endpoint = req.route?.path || req.path;
 
@@ -817,17 +873,15 @@ app.use((req, res, next) => {
       .labels(req.method, res.statusCode, endpoint)
       .observe(duration);
 
-    httpRequestsTotal
-      .labels(req.method, res.statusCode, endpoint)
-      .inc();
+    httpRequestsTotal.labels(req.method, res.statusCode, endpoint).inc();
   });
 
   next();
 });
 
 // Metrics endpoint
-app.get('/api/metrics', (req, res) => {
-  res.set('Content-Type', prometheus.register.contentType);
+app.get("/api/metrics", (req, res) => {
+  res.set("Content-Type", prometheus.register.contentType);
   res.end(prometheus.register.metrics());
 });
 ```
@@ -860,16 +914,16 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
   test:
     name: Run Tests
@@ -888,8 +942,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.18.1'
-          cache: 'npm'
+          node-version: "20.18.1"
+          cache: "npm"
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
@@ -1188,29 +1242,29 @@ const connectDB = async () => {
 
       // Write concern for production
       writeConcern: {
-        w: 'majority',
+        w: "majority",
         j: true,
-        wtimeout: 1000
+        wtimeout: 1000,
       },
 
       // Read preference
-      readPreference: 'primaryPreferred',
+      readPreference: "primaryPreferred",
 
       // Compression
-      compressors: ['zlib']
+      compressors: ["zlib"],
     });
 
     // Enable monitoring
-    conn.connection.on('connected', () => {
-      console.log('📦 MongoDB Connected successfully');
+    conn.connection.on("connected", () => {
+      console.log("📦 MongoDB Connected successfully");
     });
 
-    conn.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
+    conn.connection.on("error", (err) => {
+      console.error("❌ MongoDB connection error:", err);
     });
 
-    conn.connection.on('disconnected', () => {
-      console.log('📦 MongoDB disconnected');
+    conn.connection.on("disconnected", () => {
+      console.log("📦 MongoDB disconnected");
     });
 
     return conn;
@@ -1227,29 +1281,29 @@ module.exports = connectDB;
 
 ```javascript
 // backend/src/middleware/cache.middleware.js
-const redis = require('redis');
+const redis = require("redis");
 
 const client = redis.createClient({
-  host: process.env.REDIS_HOST || 'redis',
+  host: process.env.REDIS_HOST || "redis",
   port: process.env.REDIS_PORT || 6379,
   password: process.env.REDIS_PASSWORD,
   retry_strategy: (options) => {
-    if (options.error && options.error.code === 'ECONNREFUSED') {
-      return new Error('Redis server refused connection');
+    if (options.error && options.error.code === "ECONNREFUSED") {
+      return new Error("Redis server refused connection");
     }
     if (options.total_retry_time > 1000 * 60 * 60) {
-      return new Error('Retry time exhausted');
+      return new Error("Retry time exhausted");
     }
     if (options.attempt > 10) {
       return undefined;
     }
     return Math.min(options.attempt * 100, 3000);
-  }
+  },
 });
 
 const cache = (duration = 300) => {
   return async (req, res, next) => {
-    if (req.method !== 'GET') {
+    if (req.method !== "GET") {
       return next();
     }
 
@@ -1263,7 +1317,7 @@ const cache = (duration = 300) => {
       }
 
       const originalJson = res.json;
-      res.json = function(data) {
+      res.json = function (data) {
         if (res.statusCode === 200) {
           client.setex(key, duration, JSON.stringify(data));
         }
@@ -1272,7 +1326,7 @@ const cache = (duration = 300) => {
 
       next();
     } catch (error) {
-      console.error('Cache error:', error);
+      console.error("Cache error:", error);
       next();
     }
   };
@@ -1335,21 +1389,21 @@ docker exec nginx nginx -s reload
 ```yaml
 # monitoring/alertmanager.yml
 global:
-  smtp_smarthost: 'localhost:587'
-  smtp_from: 'alerts@yourdomain.com'
+  smtp_smarthost: "localhost:587"
+  smtp_from: "alerts@yourdomain.com"
 
 route:
-  group_by: ['alertname']
+  group_by: ["alertname"]
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 1h
-  receiver: 'web.hook'
+  receiver: "web.hook"
 
 receivers:
-  - name: 'web.hook'
+  - name: "web.hook"
     email_configs:
-      - to: 'ops-team@yourdomain.com'
-        subject: '[ALERT] {{ .GroupLabels.alertname }}'
+      - to: "ops-team@yourdomain.com"
+        subject: "[ALERT] {{ .GroupLabels.alertname }}"
         body: |
           {{ range .Alerts }}
           Alert: {{ .Annotations.summary }}
@@ -1357,10 +1411,10 @@ receivers:
           Severity: {{ .Labels.severity }}
           {{ end }}
     slack_configs:
-      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
-        channel: '#ops-alerts'
-        title: 'Production Alert'
-        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+      - api_url: "YOUR_SLACK_WEBHOOK_URL"
+        channel: "#ops-alerts"
+        title: "Production Alert"
+        text: "{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}"
 ```
 
 ## Troubleshooting

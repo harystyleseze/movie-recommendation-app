@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
 export function FinalCTA() {
@@ -46,8 +47,8 @@ export function FinalCTA() {
           {/* CTA Buttons */}
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 font-semibold shadow-xl">
-                Start Discovering Movies Free
+              <Button size="lg" className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 font-semibold shadow-xl" asChild>
+                <Link to="/register">Start Discovering Movies Free</Link>
               </Button>
               <Button
                 variant="outline"
