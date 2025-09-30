@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user.model");
-const { AppError } = require("../utils/error");
+const jwt = require('jsonwebtoken');
+const User = require('../models/user.model');
+const { AppError } = require('../utils/error');
 
 class AuthService {
   /**
@@ -12,7 +12,7 @@ class AuthService {
     // Check if user already exists
     const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
-      throw new AppError("Email already registered", 409);
+      throw new AppError('Email already registered', 409);
     }
 
     // Create new user
@@ -42,13 +42,13 @@ class AuthService {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      throw new AppError("Invalid credentials", 401);
+      throw new AppError('Invalid credentials', 401);
     }
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      throw new AppError("Invalid credentials", 401);
+      throw new AppError('Invalid credentials', 401);
     }
 
     // Generate token
@@ -71,9 +71,9 @@ class AuthService {
    */
   async getProfile(userId) {
     // Find user by ID
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select('-password');
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError('User not found', 404);
     }
 
     return {
@@ -99,14 +99,14 @@ class AuthService {
     // Find user by ID
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError('User not found', 404);
     }
 
     // Check if email is being changed and if it's already taken
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        throw new AppError("Email already registered", 409);
+        throw new AppError('Email already registered', 409);
       }
     }
 
@@ -115,7 +115,7 @@ class AuthService {
       userId,
       { name, email },
       { new: true, runValidators: true }
-    ).select("-password");
+    ).select('-password');
 
     return {
       user: {
@@ -140,13 +140,13 @@ class AuthService {
     // Find user by ID
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError("User not found", 404);
+      throw new AppError('User not found', 404);
     }
 
     // Verify current password
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
     if (!isCurrentPasswordValid) {
-      throw new AppError("Current password is incorrect", 401);
+      throw new AppError('Current password is incorrect', 401);
     }
 
     // Update password (will be hashed by mongoose middleware)
@@ -154,7 +154,7 @@ class AuthService {
     await user.save();
 
     return {
-      message: "Password updated successfully",
+      message: 'Password updated successfully',
     };
   }
 
@@ -164,7 +164,7 @@ class AuthService {
    * @returns {string} - JWT token
    */
   generateToken(userId) {
-    return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
   }
 }
 

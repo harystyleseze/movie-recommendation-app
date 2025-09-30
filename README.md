@@ -88,9 +88,7 @@ Build a full-featured movie recommendation platform where users can discover, se
 
 - **Frontend:** Deploy to Netlify/Vercel
 - **Backend:** Deploy to Render/Heroku
-- Set up CI/CD pipeline
-
----
+- ***
 
 #### **Stretch Goals**
 

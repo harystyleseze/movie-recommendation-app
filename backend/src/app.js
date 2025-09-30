@@ -4,17 +4,17 @@
  * and adds error handling middleware.
  */
 
-const express = require("express"); // Express framework
-const cors = require("cors"); // Middleware for Cross-Origin Resource Sharing
-const dotenv = require("dotenv"); // Loads environment variables from .env file
+const express = require('express'); // Express framework
+const cors = require('cors'); // Middleware for Cross-Origin Resource Sharing
+const dotenv = require('dotenv'); // Loads environment variables from .env file
 
 // Load environment variables
 dotenv.config();
 
 // Route modules
 // const movieRoutes = require("./routes/movieRoutes");
-const authRoutes = require("./routes/auth.routes");
-const { handleError } = require("./utils/error");
+const authRoutes = require('./routes/auth.routes');
+const { handleError } = require('./utils/error');
 
 // Initialize Express application
 const app = express();
@@ -23,13 +23,13 @@ const app = express();
  * @constant {string[]} allowedOrigins - Whitelisted domains for CORS.
  */
 const allowedOrigins = [
-  "http://localhost:3000",
-  "https://movieapp.com",
-  "http://127.0.0.1:5173",
-  "http://localhost:5173",
-  "http://localhost:5000",
-  "http://localhost:5001",
-  "https://www.thunderclient.com",
+  'http://localhost:3000',
+  'https://movieapp.com',
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://localhost:5001',
+  'https://www.thunderclient.com',
 ];
 
 /**
@@ -45,7 +45,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
@@ -73,7 +73,7 @@ app.use(express.json());
  * Authentication routes
  * Mounted at /api/v1/auth
  */
-app.use("/api/v1/auth", authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 /**
  * User-related routes.

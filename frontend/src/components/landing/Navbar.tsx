@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Menu, X } from 'lucide-react'
@@ -41,11 +42,11 @@ export function Navbar() {
 
           {/* Desktop CTA + Theme Toggle */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Sign In
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground" asChild>
+              <Link to="/login">Sign In</Link>
             </Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/90">
-              Get Started Free
+            <Button size="sm" className="bg-primary hover:bg-primary/90" asChild>
+              <Link to="/register">Get Started Free</Link>
             </Button>
             <ThemeToggle />
           </div>
@@ -90,14 +91,16 @@ export function Navbar() {
                   variant="ghost"
                   className="w-full justify-center text-muted-foreground hover:text-foreground"
                   onClick={() => setMobileMenuOpen(false)}
+                  asChild
                 >
-                  Sign In
+                  <Link to="/login">Sign In</Link>
                 </Button>
                 <Button
                   className="w-full justify-center bg-primary hover:bg-primary/90"
                   onClick={() => setMobileMenuOpen(false)}
+                  asChild
                 >
-                  Get Started Free
+                  <Link to="/register">Get Started Free</Link>
                 </Button>
               </div>
             </div>

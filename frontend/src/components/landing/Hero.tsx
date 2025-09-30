@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
 export function Hero() {
@@ -21,8 +22,8 @@ export function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="text-lg px-8 py-3">
-                Start Discovering
+              <Button size="lg" className="text-lg px-8 py-3" asChild>
+                <Link to="/register">Start Discovering</Link>
               </Button>
               <Button
                 variant="outline"

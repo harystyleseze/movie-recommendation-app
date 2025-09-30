@@ -3,13 +3,13 @@
  * Loads environment variables, connects to MongoDB, and starts the Express server.
  */
 
-const dotenv = require("dotenv"); // Loads environment variables from .env file
-const app = require("./app"); // Express application instance
-const connectDB = require("./config/database"); // Database connection function
+const dotenv = require('dotenv'); // Loads environment variables from .env file
+const app = require('./app'); // Express application instance
+const connectDB = require('./config/database'); // Database connection function
 
 // Load environment variables from .env file into process.env
 dotenv.config({
-  path: process.env.NODE_ENV === "production" ? ".env.production" : ".env",
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
 });
 
 /**
@@ -33,7 +33,7 @@ const startServer = async () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start server:", error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };

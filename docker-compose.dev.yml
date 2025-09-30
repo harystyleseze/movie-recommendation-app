@@ -8,8 +8,6 @@ services:
     container_name: moveere-mongodb-dev
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
       MONGO_INITDB_DATABASE: moveere_dev
     ports:
       - "27017:27017"
