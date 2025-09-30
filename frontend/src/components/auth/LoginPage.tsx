@@ -85,9 +85,9 @@ export function LoginPage() {
         // Handle API errors
         if (data.errors && Array.isArray(data.errors)) {
           const apiErrors: Record<string, string> = {}
-          data.errors.forEach((error: any) => {
+          data.errors.forEach((error: { field?: string; message?: string }) => {
             if (error.field) {
-              apiErrors[error.field] = error.message
+              apiErrors[error.field] = error.message || 'An error occurred'
             }
           })
           setErrors(apiErrors)
@@ -95,7 +95,7 @@ export function LoginPage() {
           setErrors({ general: data.message || 'Login failed. Please check your credentials.' })
         }
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: 'Network error. Please check your connection and try again.' })
     } finally {
       setIsLoading(false)

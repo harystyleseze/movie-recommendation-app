@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, Link } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { Sidebar } from './Sidebar'
+import { DashboardStats } from './DashboardStats'
+import { RecentActivity } from './RecentActivity'
+import { Search, Play } from 'lucide-react'
 
 interface User {
   id: string
@@ -46,16 +50,6 @@ export function DashboardPage() {
     }
   }, [location.state, navigate])
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('user')
-    navigate('/', {
-      state: {
-        message: 'You have been logged out successfully.'
-      }
-    })
-  }
-
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -68,118 +62,105 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      {/* Header */}
-      <header className="border-b border-border">
-        <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 group">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105">
-                <span className="text-primary-foreground font-bold text-sm">M</span>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="flex">
+        {/* Sidebar */}
+        <Sidebar user={user} />
+
+        {/* Main Content */}
+        <div className="flex-1 lg:ml-0">
+          {/* Top Header */}
+          <header className="bg-background/80 backdrop-blur-sm border-b border-border lg:pl-6">
+            <div className="flex items-center justify-between h-16 px-4 lg:px-6">
+              <div className="flex items-center space-x-4 lg:ml-12">
+                <h1 className="text-xl font-semibold text-foreground">Dashboard</h1>
               </div>
-              <span className="text-xl font-bold text-foreground">Moveere</span>
-            </Link>
-
-            {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-muted-foreground">Welcome, {user.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Sign Out
-              </Button>
-              <ThemeToggle />
+              <div className="flex items-center space-x-4">
+                <Button variant="ghost" size="sm">
+                  <Search className="h-4 w-4" />
+                </Button>
+                <ThemeToggle />
+              </div>
             </div>
-          </div>
-        </nav>
-      </header>
+          </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Welcome Message */}
-        {welcomeMessage && (
-          <div className="mb-6 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <p className="text-green-600 dark:text-green-400">{welcomeMessage}</p>
-          </div>
-        )}
+          {/* Main Dashboard Content */}
+          <main className="p-4 lg:p-6 lg:ml-12">
+            {/* Welcome Message */}
+            {welcomeMessage && (
+              <div className="mb-6 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <p className="text-green-600 dark:text-green-400">{welcomeMessage}</p>
+              </div>
+            )}
 
-        {/* Dashboard Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Your Movie Dashboard</h1>
-          <p className="text-muted-foreground">
-            Discover personalized movie recommendations just for you.
-          </p>
-        </div>
-
-        {/* User Info Card */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-          <div className="bg-card rounded-lg border border-border p-6">
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">Account Info</h3>
-            <div className="space-y-2 text-sm">
-              <p><span className="text-muted-foreground">Name:</span> {user.name}</p>
-              <p><span className="text-muted-foreground">Email:</span> {user.email}</p>
-              <p><span className="text-muted-foreground">Member since:</span> Today</p>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border border-border p-6">
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">Quick Stats</h3>
-            <div className="space-y-2 text-sm">
-              <p><span className="text-muted-foreground">Movies Rated:</span> 0</p>
-              <p><span className="text-muted-foreground">Watchlist:</span> 0</p>
-              <p><span className="text-muted-foreground">Recommendations:</span> Ready</p>
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg border border-border p-6">
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">Next Steps</h3>
-            <div className="space-y-2 text-sm">
-              <p className="text-muted-foreground">1. Rate some movies</p>
-              <p className="text-muted-foreground">2. Get recommendations</p>
-              <p className="text-muted-foreground">3. Build your watchlist</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Cards */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="bg-gradient-to-br from-primary/10 to-purple-600/10 rounded-lg border border-border p-8 text-center">
-            <div className="text-4xl mb-4">🎬</div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">Get Recommendations</h3>
-            <p className="text-muted-foreground mb-4">
-              Discover your next favorite movie with our AI-powered recommendations.
-            </p>
-            <Button className="w-full">Start Discovering</Button>
-          </div>
-
-          <div className="bg-gradient-to-br from-blue-600/10 to-cyan-600/10 rounded-lg border border-border p-8 text-center">
-            <div className="text-4xl mb-4">⭐</div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">Rate Movies</h3>
-            <p className="text-muted-foreground mb-4">
-              Rate movies you've seen to improve your personalized recommendations.
-            </p>
-            <Button variant="outline" className="w-full">Rate Movies</Button>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold text-foreground mb-4">Recent Activity</h2>
-          <div className="bg-card rounded-lg border border-border p-6">
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4 opacity-30">📽️</div>
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">No activity yet</h3>
-              <p className="text-sm text-muted-foreground">
-                Start rating movies and getting recommendations to see your activity here.
+            {/* Welcome Section */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Welcome back, {user.name}! 👋
+              </h2>
+              <p className="text-muted-foreground">
+                Here's what's happening with your movie journey today.
               </p>
             </div>
-          </div>
+
+            {/* Stats Grid */}
+            <div className="mb-8">
+              <DashboardStats />
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Quick Actions */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-card rounded-lg border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Button className="h-auto p-4 justify-start">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <Search className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-medium">Get Recommendations</div>
+                          <div className="text-xs text-muted-foreground">Find your next favorite</div>
+                        </div>
+                      </div>
+                    </Button>
+                    <Button variant="outline" className="h-auto p-4 justify-start">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-muted/50 rounded-lg flex items-center justify-center">
+                          <Play className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-medium">Browse Movies</div>
+                          <div className="text-xs text-muted-foreground">Explore our catalog</div>
+                        </div>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Simple Chart Placeholder */}
+                <div className="bg-card rounded-lg border border-border p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Viewing Activity</h3>
+                  <div className="h-48 bg-muted/20 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-3xl mb-2">📊</div>
+                      <p className="text-sm text-muted-foreground">Chart coming soon</p>
+                      <p className="text-xs text-muted-foreground">Track your viewing patterns</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div>
+                <RecentActivity />
+              </div>
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

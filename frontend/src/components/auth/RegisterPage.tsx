@@ -87,9 +87,9 @@ export function RegisterPage() {
         // Handle API errors
         if (data.errors && Array.isArray(data.errors)) {
           const apiErrors: Record<string, string> = {}
-          data.errors.forEach((error: any) => {
+          data.errors.forEach((error: { field?: string; message?: string }) => {
             if (error.field) {
-              apiErrors[error.field] = error.message
+              apiErrors[error.field] = error.message || 'An error occurred'
             }
           })
           setErrors(apiErrors)
@@ -97,7 +97,7 @@ export function RegisterPage() {
           setErrors({ general: data.message || 'Registration failed. Please try again.' })
         }
       }
-    } catch (error) {
+    } catch {
       setErrors({ general: 'Network error. Please check your connection and try again.' })
     } finally {
       setIsLoading(false)
