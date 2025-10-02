@@ -22,6 +22,68 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 8,
     },
+    // Profile Management Fields
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: '',
+    },
+    avatar: {
+      type: String,
+      default: null, // URL to profile picture
+    },
+    location: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: '',
+    },
+    favoriteGenres: {
+      type: [String],
+      default: [],
+    },
+    isPublic: {
+      type: Boolean,
+      default: true, // Whether profile is publicly visible
+    },
+    preferences: {
+      emailNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      publicWatchlists: {
+        type: Boolean,
+        default: false,
+      },
+      publicRatings: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    // Stats (calculated fields)
+    stats: {
+      totalMoviesRated: {
+        type: Number,
+        default: 0,
+      },
+      totalWatchlists: {
+        type: Number,
+        default: 0,
+      },
+      totalFavorites: {
+        type: Number,
+        default: 0,
+      },
+      averageRating: {
+        type: Number,
+        default: 0,
+      },
+    },
+    lastActive: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,

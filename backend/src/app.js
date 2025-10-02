@@ -14,6 +14,10 @@ dotenv.config();
 // Route modules
 const authRoutes = require('./routes/auth.routes');
 const movieRoutes = require('./routes/movie.routes');
+const userProfileRoutes = require('./routes/userProfile.routes');
+const favoritesRoutes = require('./routes/favorites.routes');
+const watchlistsRoutes = require('./routes/watchlists.routes');
+const ratingsRoutes = require('./routes/ratings.routes');
 const { handleError } = require('./utils/error');
 
 // Initialize Express application
@@ -80,6 +84,30 @@ app.use('/api/v1/auth', authRoutes);
  * Mounted at /api/v1/movies
  */
 app.use('/api/v1/movies', movieRoutes);
+
+/**
+ * User profile routes
+ * Mounted at /api/v1/profile
+ */
+app.use('/api/v1/profile', userProfileRoutes);
+
+/**
+ * Favorites routes
+ * Mounted at /api/v1/favorites
+ */
+app.use('/api/v1/favorites', favoritesRoutes);
+
+/**
+ * Watchlists routes
+ * Mounted at /api/v1/watchlists
+ */
+app.use('/api/v1/watchlists', watchlistsRoutes);
+
+/**
+ * Ratings routes
+ * Mounted at /api/v1/ratings
+ */
+app.use('/api/v1/ratings', ratingsRoutes);
 
 // =======================
 // Global Error Handling
