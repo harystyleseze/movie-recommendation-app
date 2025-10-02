@@ -19,11 +19,29 @@ const searchMoviesSchema = z
  */
 const discoverMoviesSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  sortBy: z.string().optional().default('popularity.desc'),
+  sortBy: z.enum(['popularity', 'rating', 'year', 'title']).default('popularity'),
   genres: z.string().optional(),
   year: z.coerce.number().int().positive().optional(),
   ratingMin: z.coerce.number().min(0).max(10).optional(),
   ratingMax: z.coerce.number().min(0).max(10).optional(),
+});
+
+/**
+ * Recommendations validation schema
+ */
+const recommendationsSchema = z.object({
+  genres: z.string().optional(),
+  baseMovie: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(20).default(10),
+});
+
+/**
+ * Trending movies validation schema
+ */
+const trendingMoviesSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  timeWindow: z.enum(['day', 'week']).default('week'),
 });
 
 /**
@@ -37,4 +55,6 @@ module.exports = {
   searchMoviesSchema,
   discoverMoviesSchema,
   movieIdSchema,
+  recommendationsSchema,
+  trendingMoviesSchema,
 };

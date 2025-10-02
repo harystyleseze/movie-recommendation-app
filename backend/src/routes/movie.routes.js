@@ -19,17 +19,31 @@ router.get('/search', movieController.searchMovies);
 router.get('/discover', movieController.discoverMovies);
 
 /**
- * @route   GET /api/v1/movies/:id
- * @desc    Get movie details by TMDB ID
- * @access  Public
- */
-router.get('/:id', movieController.getMovieDetails);
-
-/**
  * @route   GET /api/v1/movies/genres
  * @desc    Get all movie genres
  * @access  Public
  */
 router.get('/genres/all', movieController.getGenres);
+
+/**
+ * @route   GET /api/v1/movies/recommendations
+ * @desc    Get personalized movie recommendations
+ * @access  Public
+ */
+router.get('/recommendations', movieController.getRecommendations);
+
+/**
+ * @route   GET /api/v1/movies/trending
+ * @desc    Get trending/popular movies
+ * @access  Public
+ */
+router.get('/trending', movieController.getTrendingMovies);
+
+/**
+ * @route   GET /api/v1/movies/:id
+ * @desc    Get movie details by IMDb ID
+ * @access  Public
+ */
+router.get('/:id', movieController.getMovieDetails);
 
 module.exports = router;

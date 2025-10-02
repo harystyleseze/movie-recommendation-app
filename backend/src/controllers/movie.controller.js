@@ -27,7 +27,7 @@ exports.searchMovies = asyncHandler(async (req, res) => {
 exports.discoverMovies = asyncHandler(async (req, res) => {
   const {
     page = 1,
-    sortBy = 'popularity.desc',
+    sortBy = 'popularity',
     genres,
     year,
     ratingMin,
@@ -37,10 +37,10 @@ exports.discoverMovies = asyncHandler(async (req, res) => {
   const filters = {
     page: parseInt(page),
     sortBy,
-    withGenres: genres,
-    primaryReleaseYear: year,
-    voteAverageGte: ratingMin,
-    voteAverageLte: ratingMax,
+    genres,
+    year,
+    ratingMin,
+    ratingMax,
   };
 
   const results = await movieService.getMoviesByFilters(filters);
@@ -75,6 +75,60 @@ exports.getGenres = asyncHandler(async (req, res) => {
     status: 'success',
     data: {
       genres,
+    },
+  });
+});
+
+exports.getRecommendations = asyncHandler(async (req, res) => {
+  const {
+    genres,
+    baseMovie,
+    page = 1,
+    limit = 10,
+  } = req.query;
+
+  const options = {
+    userId: req.user?.id, // For future authenticated recommendations
+    genres: genres ? genres.split(',') : [],
+    baseMovie,
+    page: parseInt(page),
+    limit: parseInt(limit),
+  };
+
+  const results = await movieService.getRecommendations(options);
+
+  res.status(200).json({
+    status: 'success',
+    results: results.total_results,
+    data: {
+      movies: results.results,
+      page: results.page,
+      totalPages: results.total_pages,
+      recommendationType: results.recommendation_type,
+    },
+  });
+});
+
+exports.getTrendingMovies = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    timeWindow = 'week',
+  } = req.query;
+
+  const options = {
+    page: parseInt(page),
+    timeWindow,
+  };
+
+  const results = await movieService.getTrendingMovies(options);
+
+  res.status(200).json({
+    status: 'success',
+    results: results.total_results,
+    data: {
+      movies: results.results,
+      page: results.page,
+      totalPages: results.total_pages,
     },
   });
 });

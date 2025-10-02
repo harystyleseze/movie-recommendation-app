@@ -23,12 +23,30 @@ class MovieService {
   }
 
   /**
-   * Get movies by filters
+   * Get movies by filters with enhanced filtering
    * @param {Object} filters - Filter parameters
    * @returns {Promise<Object>} Movie results
    */
   async getMoviesByFilters(filters) {
     return omdbService.discoverMovies(filters);
+  }
+
+  /**
+   * Get personalized movie recommendations
+   * @param {Object} options - Recommendation options
+   * @returns {Promise<Object>} Recommended movies
+   */
+  async getRecommendations(options) {
+    return omdbService.getRecommendations(options);
+  }
+
+  /**
+   * Get trending/popular movies
+   * @param {Object} options - Options for trending movies
+   * @returns {Promise<Object>} Trending movies
+   */
+  async getTrendingMovies(options) {
+    return omdbService.getTrendingMovies(options);
   }
 
   /**

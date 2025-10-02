@@ -110,15 +110,17 @@ class OMDbService {
   }
 
   /**
-   * Discover movies by filters (simplified for OMDb)
-   * OMDb doesn't have advanced filtering, so we'll search by genre keywords
+   * Discover movies by filters with enhanced filtering
    * @param {Object} filters - Filter options
-   * @returns {Promise<Object>} - Movie results
+   * @returns {Promise<Object>} - Movie results with filtering
    */
   async discoverMovies({
     page = 1,
     genres = '',
     year = '',
+    ratingMin = '',
+    ratingMax = '',
+    sortBy = 'popularity',
   } = {}) {
     try {
       // For OMDb, we'll search by genre as keyword if provided
@@ -129,13 +131,110 @@ class OMDbService {
         searchQuery = genres.toLowerCase();
       }
 
-      return this.searchMovies({
+      const results = await this.searchMovies({
         query: searchQuery,
         page,
         year
       });
+
+      // Apply additional filtering since OMDb doesn't support advanced filters
+      if (results.results && (ratingMin || ratingMax || sortBy !== 'popularity')) {
+        const filteredResults = await this._applyAdvancedFilters(
+          results.results,
+          { ratingMin, ratingMax, sortBy }
+        );
+
+        return {
+          ...results,
+          results: filteredResults,
+        };
+      }
+
+      return results;
     } catch (error) {
       this._handleApiError(error, 'Error discovering movies');
+    }
+  }
+
+  /**
+   * Get personalized movie recommendations
+   * @param {Object} options - Recommendation options
+   * @returns {Promise<Object>} - Recommended movies
+   */
+  async getRecommendations({
+    userId = null,
+    genres = [],
+    baseMovie = null,
+    page = 1,
+    limit = 10
+  } = {}) {
+    try {
+      let searchQuery = 'popular';
+
+      // If genres provided, use them for recommendations
+      if (genres.length > 0) {
+        searchQuery = genres[0].toLowerCase();
+      }
+
+      // If base movie provided, get similar movies by genre
+      if (baseMovie) {
+        const movieDetails = await this.getMovieDetails(baseMovie, true);
+        if (movieDetails && movieDetails.Genre !== 'N/A') {
+          const movieGenres = movieDetails.Genre.split(', ');
+          searchQuery = movieGenres[0].toLowerCase();
+        }
+      }
+
+      const results = await this.searchMovies({
+        query: searchQuery,
+        page
+      });
+
+      // Sort by rating for better recommendations
+      if (results.results) {
+        const detailedResults = await this._enhanceWithRatings(results.results.slice(0, limit));
+
+        return {
+          ...results,
+          results: detailedResults,
+          recommendation_type: baseMovie ? 'similar' : 'genre_based',
+        };
+      }
+
+      return results;
+    } catch (error) {
+      this._handleApiError(error, 'Error generating recommendations');
+    }
+  }
+
+  /**
+   * Get trending/popular movies
+   * @param {Object} options - Options for trending movies
+   * @returns {Promise<Object>} - Trending movies
+   */
+  async getTrendingMovies({ page = 1, timeWindow = 'week' } = {}) {
+    try {
+      // OMDb doesn't have trending endpoint, so we'll search for popular movies
+      const popularQueries = ['Marvel', 'Batman', 'Star Wars', 'Disney', 'Action'];
+      const randomQuery = popularQueries[Math.floor(Math.random() * popularQueries.length)];
+
+      const results = await this.searchMovies({
+        query: randomQuery,
+        page
+      });
+
+      if (results.results) {
+        const enhancedResults = await this._enhanceWithRatings(results.results);
+
+        return {
+          ...results,
+          results: enhancedResults.sort((a, b) => (b.imdbRating || 0) - (a.imdbRating || 0)),
+        };
+      }
+
+      return results;
+    } catch (error) {
+      this._handleApiError(error, 'Error fetching trending movies');
     }
   }
 
@@ -168,6 +267,111 @@ class OMDbService {
       return commonGenres;
     } catch (error) {
       this._handleApiError(error, 'Error fetching genres');
+    }
+  }
+
+  /**
+   * Apply advanced filters to movie results
+   * @private
+   * @param {Array} movies - Array of movie objects
+   * @param {Object} filters - Filter criteria
+   * @returns {Promise<Array>} - Filtered movies
+   */
+  async _applyAdvancedFilters(movies, { ratingMin, ratingMax, sortBy }) {
+    try {
+      // Get detailed info for filtering by rating
+      const detailedMovies = await this._enhanceWithRatings(movies);
+
+      let filteredMovies = detailedMovies;
+
+      // Filter by rating if specified
+      if (ratingMin || ratingMax) {
+        filteredMovies = detailedMovies.filter(movie => {
+          const rating = parseFloat(movie.imdbRating) || 0;
+          const minRating = parseFloat(ratingMin) || 0;
+          const maxRating = parseFloat(ratingMax) || 10;
+          return rating >= minRating && rating <= maxRating;
+        });
+      }
+
+      // Sort results
+      switch (sortBy) {
+        case 'rating':
+          filteredMovies.sort((a, b) => (parseFloat(b.imdbRating) || 0) - (parseFloat(a.imdbRating) || 0));
+          break;
+        case 'year':
+          filteredMovies.sort((a, b) => (parseInt(b.Year) || 0) - (parseInt(a.Year) || 0));
+          break;
+        case 'title':
+          filteredMovies.sort((a, b) => a.Title.localeCompare(b.Title));
+          break;
+        default:
+          // Keep original order (popularity)
+          break;
+      }
+
+      return filteredMovies;
+    } catch (error) {
+      console.error('Error applying advanced filters:', error);
+      return movies; // Return original movies if filtering fails
+    }
+  }
+
+  /**
+   * Enhance movie results with detailed ratings and info
+   * @private
+   * @param {Array} movies - Array of basic movie objects
+   * @returns {Promise<Array>} - Enhanced movie objects
+   */
+  async _enhanceWithRatings(movies) {
+    try {
+      // Limit concurrent requests to avoid rate limiting
+      const BATCH_SIZE = 3;
+      const enhancedMovies = [];
+
+      for (let i = 0; i < movies.length; i += BATCH_SIZE) {
+        const batch = movies.slice(i, i + BATCH_SIZE);
+
+        const enhancedBatch = await Promise.all(
+          batch.map(async (movie) => {
+            try {
+              // Get detailed info for each movie
+              const details = await this.getMovieDetails(movie.imdbID, true);
+              return {
+                ...movie,
+                imdbRating: details.imdbRating,
+                Genre: details.Genre,
+                Director: details.Director,
+                Plot: details.Plot,
+                Runtime: details.Runtime,
+              };
+            } catch (error) {
+              // If detail fetch fails, return original movie
+              console.warn(`Failed to enhance movie ${movie.imdbID}:`, error.message);
+              return {
+                ...movie,
+                imdbRating: 'N/A',
+                Genre: 'N/A',
+                Director: 'N/A',
+                Plot: 'N/A',
+                Runtime: 'N/A',
+              };
+            }
+          })
+        );
+
+        enhancedMovies.push(...enhancedBatch);
+
+        // Small delay between batches to be respectful to API
+        if (i + BATCH_SIZE < movies.length) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+
+      return enhancedMovies;
+    } catch (error) {
+      console.error('Error enhancing movies with ratings:', error);
+      return movies; // Return original movies if enhancement fails
     }
   }
 
