@@ -12,8 +12,8 @@ const dotenv = require('dotenv'); // Loads environment variables from .env file
 dotenv.config();
 
 // Route modules
-// const movieRoutes = require("./routes/movieRoutes");
 const authRoutes = require('./routes/auth.routes');
+const movieRoutes = require('./routes/movie.routes');
 const { handleError } = require('./utils/error');
 
 // Initialize Express application
@@ -76,16 +76,10 @@ app.use(express.json());
 app.use('/api/v1/auth', authRoutes);
 
 /**
- * User-related routes.
- * Mounted at /api/v1/users
- */
-// app.use("/api/v1/users", userRoutes);
-
-/**
  * Movie-related routes.
  * Mounted at /api/v1/movies
  */
-// app.use("/api/v1/movies", movieRoutes);
+app.use('/api/v1/movies', movieRoutes);
 
 // =======================
 // Global Error Handling
