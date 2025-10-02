@@ -48,14 +48,15 @@ export function FinalCTA() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button size="lg" className="text-lg px-8 py-4 bg-white text-blue-600 hover:bg-gray-100 font-semibold shadow-xl" asChild>
-                <Link to="/register">Start Discovering Movies Free</Link>
+                <Link to="/movies">Browse Movies Now</Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-300"
+                asChild
               >
-                Watch 2-Min Demo
+                <Link to="/register">Start Free Account</Link>
               </Button>
             </div>
 

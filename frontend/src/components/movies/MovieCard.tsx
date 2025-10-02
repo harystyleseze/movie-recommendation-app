@@ -3,14 +3,17 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { Movie } from '@/services/api'
 import { Calendar, Star } from 'lucide-react'
+import { FavoriteButton } from '@/components/favorites/FavoriteButton'
+import { WatchlistButton } from '@/components/watchlists/WatchlistButton'
 
 interface MovieCardProps {
   movie: Movie
   onClick?: () => void
   className?: string
+  showUserActions?: boolean
 }
 
-export function MovieCard({ movie, onClick, className }: MovieCardProps) {
+export function MovieCard({ movie, onClick, className, showUserActions = true }: MovieCardProps) {
   const handleClick = () => {
     if (onClick) {
       onClick()
@@ -46,6 +49,14 @@ export function MovieCard({ movie, onClick, className }: MovieCardProps) {
             <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded flex items-center gap-1">
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
               <span className="text-xs font-medium">{movie.imdbRating}</span>
+            </div>
+          )}
+
+          {/* User Action Buttons */}
+          {showUserActions && (
+            <div className="absolute top-2 left-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <FavoriteButton movie={movie} size="sm" />
+              <WatchlistButton movie={movie} size="sm" />
             </div>
           )}
         </div>

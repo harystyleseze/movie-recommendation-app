@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import type { Movie } from '@/services/api'
+import type { Movie, Rating } from '@/services/api'
 import { apiService } from '@/services/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Star, Calendar, Clock, Users } from 'lucide-react'
+import { FavoriteButton } from '@/components/favorites/FavoriteButton'
+import { WatchlistButton } from '@/components/watchlists/WatchlistButton'
+import { RatingDialog } from '@/components/ratings/RatingDialog'
+import { RatingStars } from '@/components/ratings/RatingStars'
+import { MovieCard } from './MovieCard'
 
 export function MovieDetails() {
   const { movieId } = useParams<{ movieId: string }>()
   const navigate = useNavigate()
   const [movie, setMovie] = useState<Movie | null>(null)
   const [recommendations, setRecommendations] = useState<Movie[]>([])
+  const [movieRatings, setMovieRatings] = useState<Rating[]>([])
+  const [averageRating, setAverageRating] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,6 +26,7 @@ export function MovieDetails() {
     if (movieId) {
       loadMovieDetails()
       loadRecommendations()
+      loadMovieRatings()
     }
   }, [movieId])
 
@@ -48,6 +56,18 @@ export function MovieDetails() {
       setRecommendations(response.data.movies || [])
     } catch (err) {
       console.error('Failed to load recommendations:', err)
+    }
+  }
+
+  const loadMovieRatings = async () => {
+    if (!movieId) return
+
+    try {
+      const response = await apiService.getMovieRatings(movieId, 1, 5)
+      setMovieRatings(response.data.ratings || [])
+      setAverageRating(response.data.averageRating || 0)
+    } catch (err) {
+      console.error('Failed to load movie ratings:', err)
     }
   }
 
@@ -139,7 +159,25 @@ export function MovieDetails() {
 
         {/* Movie Details */}
         <div className="lg:col-span-2">
-          <h1 className="text-4xl font-bold mb-4">{movie.Title}</h1>
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="text-4xl font-bold">{movie.Title}</h1>
+
+            {/* User Action Buttons */}
+            <div className="flex items-center gap-2 ml-4">
+              <FavoriteButton movie={movie} variant="outline" showLabel />
+              <WatchlistButton movie={movie} variant="outline" showLabel />
+              <RatingDialog
+                movie={movie}
+                onRatingUpdated={loadMovieRatings}
+                trigger={
+                  <Button variant="outline">
+                    <Star className="h-4 w-4 mr-2" />
+                    Rate
+                  </Button>
+                }
+              />
+            </div>
+          </div>
 
           <div className="flex flex-wrap items-center gap-4 mb-6 text-muted-foreground">
             {movie.Year && (
@@ -183,7 +221,7 @@ export function MovieDetails() {
           )}
 
           {movie.Released && (
-            <div className="mb-4">
+            <div className="mb-6">
               <h3 className="font-semibold mb-2">Release Date</h3>
               <p className="text-muted-foreground">{movie.Released}</p>
             </div>
@@ -191,50 +229,59 @@ export function MovieDetails() {
         </div>
       </div>
 
+      {/* Ratings and Reviews Section */}
+      {movieRatings.length > 0 && (
+        <div className="mb-12">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Ratings & Reviews</span>
+                {averageRating > 0 && (
+                  <div className="flex items-center gap-2">
+                    <RatingStars rating={averageRating} readonly />
+                    <span className="text-sm text-muted-foreground">
+                      {averageRating.toFixed(1)} ({movieRatings.length} review{movieRatings.length !== 1 ? 's' : ''})
+                    </span>
+                  </div>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {movieRatings.map((rating) => (
+                <div key={rating.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <RatingStars rating={rating.rating} readonly size="sm" />
+                      <span className="text-sm font-medium">{rating.rating}/5</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(rating.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {rating.review && (
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {rating.review}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Recommendations */}
       {recommendations.length > 0 && (
         <div>
           <h2 className="text-2xl font-bold mb-6">You might also like</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {recommendations.map((rec) => (
-              <Card
+              <MovieCard
                 key={rec.imdbID}
-                className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
+                movie={rec}
                 onClick={() => handleRecommendationClick(rec)}
-              >
-                <CardContent className="p-0">
-                  <div className="relative overflow-hidden rounded-t-lg">
-                    {rec.Poster && rec.Poster !== 'N/A' ? (
-                      <img
-                        src={rec.Poster}
-                        alt={`${rec.Title} poster`}
-                        className="h-48 w-full object-cover transition-transform duration-200 group-hover:scale-110"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src = '/placeholder-movie.svg'
-                        }}
-                      />
-                    ) : (
-                      <div className="h-48 w-full bg-muted flex items-center justify-center">
-                        <span className="text-muted-foreground text-sm">No poster</span>
-                      </div>
-                    )}
-                    {rec.imdbRating && (
-                      <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs font-medium">{rec.imdbRating}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="p-3">
-                    <h3 className="font-semibold text-sm leading-tight mb-1 line-clamp-2">
-                      {rec.Title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">{rec.Year}</p>
-                  </div>
-                </CardContent>
-              </Card>
+                className="h-full"
+              />
             ))}
           </div>
         </div>
