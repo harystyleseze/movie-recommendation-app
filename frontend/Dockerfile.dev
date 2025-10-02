@@ -1,5 +1,5 @@
 # Development Dockerfile for React/Vite Frontend
-FROM node:20.18.1-alpine
+FROM node:22.12.0-alpine
 
 # Install security updates and essential tools
 RUN apk update && apk add --no-cache \
