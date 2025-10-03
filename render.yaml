@@ -13,7 +13,7 @@ services:
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        value: mongodb+srv://harystyles:Ebuka1234@cluster0.b6kryzo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+        value: mongodb+srv://harystyles:Ebuka1234@cluster0.b6kryzo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&authSource=admin
       - key: DB_NAME
         value: moveere_prod
       - key: JWT_SECRET
