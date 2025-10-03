@@ -34,7 +34,7 @@ const allowedOrigins = [
   'http://localhost:5001',
   'https://www.thunderclient.com',
   // Production domains - update with your actual domains
-  'https://your-frontend-domain.vercel.app',
+  'https://movie-recommendation-app-green.vercel.app',
   // Allow all Vercel preview deployments (optional)
   /https:\/\/.*\.vercel\.app$/,
 ];
@@ -83,7 +83,7 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
-    service: 'movie-recommendation-backend'
+    service: 'movie-recommendation-backend',
   });
 });
 
