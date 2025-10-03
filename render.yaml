@@ -29,7 +29,7 @@ services:
       - key: RATE_LIMIT_MAX
         value: 50
       - key: CORS_ORIGIN
-        value: https://your-frontend-domain.vercel.app
+        value: https://movie-recommendation-app-green.vercel.app/
       - key: OMDB_API_KEY
         value: b584f224
     healthCheckPath: /api/health
