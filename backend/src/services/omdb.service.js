@@ -162,7 +162,7 @@ class OMDbService {
    * @returns {Promise<Object>} - Recommended movies
    */
   async getRecommendations({
-    userId = null,
+    userId: _userId = null, // Future use for personalized recommendations
     genres = [],
     baseMovie = null,
     page = 1,
@@ -212,7 +212,7 @@ class OMDbService {
    * @param {Object} options - Options for trending movies
    * @returns {Promise<Object>} - Trending movies
    */
-  async getTrendingMovies({ page = 1, timeWindow = 'week' } = {}) {
+  async getTrendingMovies({ page = 1, timeWindow: _timeWindow = 'week' } = {}) {
     try {
       // OMDb doesn't have trending endpoint, so we'll search for popular movies
       const popularQueries = ['Marvel', 'Batman', 'Star Wars', 'Disney', 'Action'];

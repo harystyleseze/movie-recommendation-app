@@ -26,13 +26,8 @@ const validate = (schemas) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        // Debug log to see the actual error structure
-        console.log('Zod Error:', JSON.stringify(error, null, 2));
-        console.log('Error.errors:', error.errors);
-        console.log('Error.issues:', error.issues);
-
-        const errorMessages = (error.issues || error.errors || []).map((err) => ({
-          field: err.path?.join('.') || 'unknown',
+        const errorMessages = error.issues.map((err) => ({
+          field: err.path.join('.'),
           message: err.message,
         }));
 

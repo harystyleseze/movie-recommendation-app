@@ -5,7 +5,7 @@ services:
     env: node
     plan: free
     region: oregon
-    buildCommand: cd backend && npm ci && npm run build
+    buildCommand: cd backend && npm ci
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -13,9 +13,7 @@ services:
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        fromDatabase:
-          name: movie-recommendation-db
-          property: connectionString
+        value: mongodb+srv://harystyles:Ebuka1234@cluster0.b6kryzo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - key: DB_NAME
         value: moveere_prod
       - key: JWT_SECRET
@@ -32,11 +30,7 @@ services:
         value: 50
       - key: CORS_ORIGIN
         value: https://your-frontend-domain.vercel.app
+      - key: OMDB_API_KEY
+        value: b584f224
     healthCheckPath: /api/health
-
-databases:
-  - name: movie-recommendation-db
-    databaseName: moveere_prod
-    user: moveere_user
-    plan: free
-    region: oregon
+# No databases section needed - using MongoDB Atlas cloud service

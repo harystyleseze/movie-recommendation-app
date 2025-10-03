@@ -28,12 +28,15 @@ const app = express();
  */
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://movieapp.com',
   'http://127.0.0.1:5173',
   'http://localhost:5173',
   'http://localhost:5000',
   'http://localhost:5001',
   'https://www.thunderclient.com',
+  // Production domains - update with your actual domains
+  'https://your-frontend-domain.vercel.app',
+  // Allow all Vercel preview deployments (optional)
+  /https:\/\/.*\.vercel\.app$/,
 ];
 
 /**
@@ -72,6 +75,17 @@ app.use(express.json());
 // =======================
 // Routes
 // =======================
+
+/**
+ * Health check endpoint for deployment monitoring
+ */
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    service: 'movie-recommendation-backend'
+  });
+});
 
 /**
  * Authentication routes

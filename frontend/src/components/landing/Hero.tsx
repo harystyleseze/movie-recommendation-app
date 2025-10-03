@@ -23,14 +23,15 @@ export function Hero() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button size="lg" className="text-lg px-8 py-3" asChild>
-                <Link to="/register">Start Discovering</Link>
+                <Link to="/movies">Discover Movies</Link>
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 className="text-lg px-8 py-3 border-gray-300 hover:border-gray-400"
+                asChild
               >
-                Watch Demo
+                <Link to="/register">Start Free Account</Link>
               </Button>
             </div>
 
