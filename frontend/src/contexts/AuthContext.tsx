@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(freshUser);
             setIsAuthenticated(true);
             AuthManager.setUser(freshUser); // Update cached user data
-          } catch (error) {
+          } catch {
             // Token is invalid, clear auth state
             AuthManager.removeToken();
             setUser(null);
