@@ -172,6 +172,7 @@ export interface Pagination {
   limit: number;
   total: number;
   pages: number;
+  totalPages: number;
 }
 
 export interface RatingStats {
