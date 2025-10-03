@@ -11,7 +11,6 @@ const movieSchema = new mongoose.Schema(
     imdbId: {
       type: String,
       required: true,
-      unique: true,
     },
     title: {
       type: String,
@@ -59,7 +58,7 @@ const movieSchema = new mongoose.Schema(
 
 // Index for faster searches
 movieSchema.index({ title: 'text', genres: 'text' });
-movieSchema.index({ imdbId: 1 });
+movieSchema.index({ imdbId: 1 }, { unique: true });
 movieSchema.index({ voteAverage: -1 });
 movieSchema.index({ releaseDate: -1 });
 movieSchema.index({ year: -1 });
