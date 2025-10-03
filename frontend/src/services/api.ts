@@ -167,6 +167,32 @@ export interface DiscoverParams {
   ratingMax?: number;
 }
 
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+}
+
+export interface RatingStats {
+  totalRatings: number;
+  averageRating: number;
+  ratingBreakdown: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+}
+
+export interface MovieData {
+  title: string;
+  poster: string;
+  year: string;
+  genre?: string;
+}
+
 export interface ApiResponse<T> {
   status: string;
   data: T;
@@ -296,7 +322,7 @@ class ApiService {
     return response;
   }
 
-  async changePassword(data: { currentPassword: string; newPassword: string }): Promise<ApiResponse<any>> {
+  async changePassword(data: { currentPassword: string; newPassword: string }): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -308,20 +334,20 @@ class ApiService {
   }
 
   // Favorites endpoints
-  async addToFavorites(movieId: string, movieData: any): Promise<ApiResponse<{ favorite: Favorite }>> {
+  async addToFavorites(movieId: string, movieData: MovieData): Promise<ApiResponse<{ favorite: Favorite }>> {
     return this.fetchApi('/favorites', {
       method: 'POST',
       body: JSON.stringify({ movieId, movieData }),
     });
   }
 
-  async removeFromFavorites(movieId: string): Promise<ApiResponse<any>> {
+  async removeFromFavorites(movieId: string): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi(`/favorites/${movieId}`, {
       method: 'DELETE',
     });
   }
 
-  async getFavorites(page = 1, limit = 10): Promise<ApiResponse<{ favorites: Favorite[]; pagination: any }>> {
+  async getFavorites(page = 1, limit = 10): Promise<ApiResponse<{ favorites: Favorite[]; pagination: Pagination }>> {
     return this.fetchApi(`/favorites?page=${page}&limit=${limit}`);
   }
 
@@ -345,7 +371,7 @@ class ApiService {
     });
   }
 
-  async getWatchlists(page = 1, limit = 10): Promise<ApiResponse<{ watchlists: Watchlist[]; pagination: any }>> {
+  async getWatchlists(page = 1, limit = 10): Promise<ApiResponse<{ watchlists: Watchlist[]; pagination: Pagination }>> {
     return this.fetchApi(`/watchlists?page=${page}&limit=${limit}`);
   }
 
@@ -360,53 +386,53 @@ class ApiService {
     });
   }
 
-  async deleteWatchlist(watchlistId: string): Promise<ApiResponse<any>> {
+  async deleteWatchlist(watchlistId: string): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi(`/watchlists/${watchlistId}`, {
       method: 'DELETE',
     });
   }
 
-  async addMovieToWatchlist(watchlistId: string, movieId: string, movieData: any): Promise<ApiResponse<{ watchlist: Watchlist }>> {
+  async addMovieToWatchlist(watchlistId: string, movieId: string, movieData: MovieData): Promise<ApiResponse<{ watchlist: Watchlist }>> {
     return this.fetchApi(`/watchlists/${watchlistId}/movies`, {
       method: 'POST',
       body: JSON.stringify({ movieId, movieData }),
     });
   }
 
-  async removeMovieFromWatchlist(watchlistId: string, movieId: string): Promise<ApiResponse<any>> {
+  async removeMovieFromWatchlist(watchlistId: string, movieId: string): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi(`/watchlists/${watchlistId}/movies/${movieId}`, {
       method: 'DELETE',
     });
   }
 
-  async updateWatchedStatus(watchlistId: string, movieId: string, watched: boolean, notes?: string): Promise<ApiResponse<any>> {
+  async updateWatchedStatus(watchlistId: string, movieId: string, watched: boolean, notes?: string): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi(`/watchlists/${watchlistId}/movies/${movieId}/watched`, {
       method: 'PATCH',
       body: JSON.stringify({ watched, notes }),
     });
   }
 
-  async getPublicWatchlists(page = 1, limit = 10): Promise<ApiResponse<{ watchlists: Watchlist[]; pagination: any }>> {
+  async getPublicWatchlists(page = 1, limit = 10): Promise<ApiResponse<{ watchlists: Watchlist[]; pagination: Pagination }>> {
     return this.fetchApi(`/watchlists/public?page=${page}&limit=${limit}`);
   }
 
   // Ratings endpoints
-  async addOrUpdateRating(data: { movieId: string; rating: number; review?: string; movieData: any }): Promise<ApiResponse<{ rating: Rating }>> {
+  async addOrUpdateRating(data: { movieId: string; rating: number; review?: string; movieData: MovieData }): Promise<ApiResponse<{ rating: Rating }>> {
     return this.fetchApi('/ratings', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async getUserRatings(page = 1, limit = 10): Promise<ApiResponse<{ ratings: Rating[]; pagination: any }>> {
+  async getUserRatings(page = 1, limit = 10): Promise<ApiResponse<{ ratings: Rating[]; pagination: Pagination }>> {
     return this.fetchApi(`/ratings?page=${page}&limit=${limit}`);
   }
 
-  async getMyRatingStats(): Promise<ApiResponse<{ stats: any }>> {
+  async getMyRatingStats(): Promise<ApiResponse<{ stats: RatingStats }>> {
     return this.fetchApi('/ratings/stats');
   }
 
-  async getMovieRatings(movieId: string, page = 1, limit = 10): Promise<ApiResponse<{ ratings: Rating[]; pagination: any; averageRating: number }>> {
+  async getMovieRatings(movieId: string, page = 1, limit = 10): Promise<ApiResponse<{ ratings: Rating[]; pagination: Pagination; averageRating: number }>> {
     return this.fetchApi(`/ratings/movie/${movieId}?page=${page}&limit=${limit}`);
   }
 
@@ -414,17 +440,17 @@ class ApiService {
     return this.fetchApi(`/ratings/movie/${movieId}/my-rating`);
   }
 
-  async deleteRating(ratingId: string): Promise<ApiResponse<any>> {
+  async deleteRating(ratingId: string): Promise<ApiResponse<{ message: string }>> {
     return this.fetchApi(`/ratings/${ratingId}`, {
       method: 'DELETE',
     });
   }
 
-  async getRecentReviews(page = 1, limit = 10): Promise<ApiResponse<{ ratings: Rating[]; pagination: any }>> {
+  async getRecentReviews(page = 1, limit = 10): Promise<ApiResponse<{ ratings: Rating[]; pagination: Pagination }>> {
     return this.fetchApi(`/ratings/recent?page=${page}&limit=${limit}`);
   }
 
-  async markRatingHelpful(ratingId: string): Promise<ApiResponse<any>> {
+  async markRatingHelpful(ratingId: string): Promise<ApiResponse<{ message: string; helpfulCount: number }>> {
     return this.fetchApi(`/ratings/${ratingId}/helpful`, {
       method: 'POST',
     });
